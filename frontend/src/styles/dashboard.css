@@ -1,0 +1,183 @@
+/* React용 dashboard 스타일 */
+.dashboard-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: #1e3a5f;
+  padding: 0 24px;
+  height: 56px;
+  border-radius: 8px;
+}
+
+.dashboard-header h2 { color: white; font-size: 18px; }
+.dashboard-header span { color: #a8c4e0; margin-right: 12px; font-size: 14px; }
+.dashboard-header button {
+  background: transparent;
+  border: 1px solid #a8c4e0;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.dashboard-body { padding: 8px 0; }
+
+.dashboard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.dashboard-top h3 { font-size: 18px; color: #1e3a5f; }
+.dashboard-top div { display: flex; gap: 10px; }
+.dashboard-top button {
+  background: #1e3a5f;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-quick {
+  background: transparent;
+  border: 1px solid #1e3a5f;
+  color: #1e3a5f;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+.btn-quick:hover { background: #1e3a5f; color: white; }
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.project-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.2s;
+}
+.project-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+
+.project-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.project-card-header h4 {
+  font-size: 15px;
+  color: #1e3a5f;
+  flex: 1;
+  text-align: center;
+}
+.project-card-header button {
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+}
+.project-card-header a {
+  color: #1e3a5f;
+  font-size: 13px;
+  text-decoration: none;
+  font-weight: 500;
+}
+.project-card-header a:hover { text-decoration: underline; }
+
+.project-desc {
+  color: #888;
+  font-size: 13px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.create-form {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.create-form input {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.create-form input:focus { border-color: #1e3a5f; }
+.create-form button {
+  background: #1e3a5f;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.empty {
+  text-align: center;
+  padding: 60px;
+  color: #888;
+  font-size: 15px;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-edit, .btn-confirm {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 0;
+}
+
+.btn-confirm { color: #16a34a; font-size: 18px; }
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  margin: 0 8px;
+}
+
+.edit-form input {
+  padding: 4px 8px;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
