@@ -145,7 +145,8 @@ LOGOUT_REDIRECT_URL = '/login/'
 
 # CORS 설정 (React 개발서버 허용)
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",   # Vite(React) 개발서버
+    "http://localhost:5173",
+    "https://django-excel-free-throw.vercel.app",  # ← 추가
 ]
 CORS_ALLOW_CREDENTIALS = True
 
