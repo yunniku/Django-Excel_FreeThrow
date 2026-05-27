@@ -23,14 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-j@^420$x&=og50a&&y@&u2kmf2jk6r6=d13h_zk598@k34n2a$'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-j@^420$x&=og50a&&y@&u2kmf2jk6r6=d13h_zk598@k34n2a$')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
-
-
+ALLOWED_HOSTS = ['django-excelfreethrow-production.up.railway.app', 'localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
