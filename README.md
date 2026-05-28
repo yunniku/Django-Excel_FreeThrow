@@ -23,6 +23,7 @@
 | **엑셀 처리** | pandas, openpyxl |
 | **인증** | DRF Token Authentication |
 | **컨테이너** | Docker, Docker Compose |
+| **웹 서버** | Nginx (리버스 프록시) |
 | **배포** | Railway (Backend), Vercel (Frontend), AWS EC2 (Linux 서버) |
 | **CI/CD** | GitHub Actions |
 
@@ -77,6 +78,13 @@ Backend (Django REST Framework) — Railway / AWS EC2
 ├── /api/excel/filter-values/ 조건 필터 값 조회
 ├── /api/excel/compare/       Compare 실행
 └── /api/excel/save/          Save Result 실행
+
+         │  Nginx 리버스 프록시 (AWS EC2)
+         ↓
+
+Nginx
+├── / (80포트)     → React (5173포트)
+└── /api/ (80포트) → Django (8000포트)
 ```
 
 ---
@@ -193,6 +201,9 @@ docker-compose up -d --build
 
 # 종료
 docker-compose down
+
+# 마이그레이션
+docker-compose exec backend python3 manage.py migrate
 ```
 
 ---
@@ -211,7 +222,10 @@ git push → 자동 배포
 git push → GitHub Actions → EC2 자동 배포
 ├── Amazon Linux 2023
 ├── Docker + Docker Compose
-└── http://18.118.49.235:5173
+├── Nginx 리버스 프록시 (80포트)
+│   ├── /      → React  (5173포트)
+│   └── /api/  → Django (8000포트)
+└── http://18.118.49.235
 ```
 
 ### GitHub Actions CI/CD
@@ -225,10 +239,18 @@ on:
 
 ---
 
+## 🔑 EC2 SSH 접속
+
+```bash
+ssh -i excel-freethrow-key.pem ec2-user@18.118.49.235
+```
+
+---
+
 ## 👨‍💻 개발자
 
 | 항목 | 내용 |
 |------|------|
 | **개발 기간** | 2026 |
 | **개발 인원** | 1인 개발 |
-| **버전** | Ver 1.1 |
+| **버전** | Ver 1.2 |
