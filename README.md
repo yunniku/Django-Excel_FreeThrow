@@ -22,7 +22,9 @@
 | **Backend** | Python 3.11, Django 5.2, Django REST Framework |
 | **엑셀 처리** | pandas, openpyxl |
 | **인증** | DRF Token Authentication |
-| **배포** | Railway (Backend), Vercel (Frontend) |
+| **컨테이너** | Docker, Docker Compose |
+| **배포** | Railway (Backend), Vercel (Frontend), AWS EC2 (Linux 서버) |
+| **CI/CD** | GitHub Actions |
 
 ---
 
@@ -64,17 +66,17 @@ Frontend (React) — Vercel
          │  axios (REST API / JSON)
          ↓
 
-Backend (Django REST Framework) — Railway
-├── /api/auth/register     회원가입
-├── /api/auth/login        로그인
-├── /api/auth/logout       로그아웃
-├── /api/projects/         프로젝트 목록 / 생성
-├── /api/projects/<id>/    프로젝트 수정 / 삭제
-├── /api/excel/sheets/     시트 목록 조회
-├── /api/excel/preview/    파일 미리보기
-├── /api/excel/filter-values/  조건 필터 값 조회
-├── /api/excel/compare/    Compare 실행
-└── /api/excel/save/       Save Result 실행
+Backend (Django REST Framework) — Railway / AWS EC2
+├── /api/auth/register        회원가입
+├── /api/auth/login           로그인
+├── /api/auth/logout          로그아웃
+├── /api/projects/            프로젝트 목록 / 생성
+├── /api/projects/<id>/       프로젝트 수정 / 삭제
+├── /api/excel/sheets/        시트 목록 조회
+├── /api/excel/preview/       파일 미리보기
+├── /api/excel/filter-values/ 조건 필터 값 조회
+├── /api/excel/compare/       Compare 실행
+└── /api/excel/save/          Save Result 실행
 ```
 
 ---
@@ -83,6 +85,9 @@ Backend (Django REST Framework) — Railway
 
 ```
 Excel_FreeThrow/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml        GitHub Actions CI/CD
 ├── config/                   Django 설정
 │   ├── settings.py
 │   └── urls.py
@@ -92,6 +97,7 @@ Excel_FreeThrow/
 │   ├── views.py              API 뷰
 │   └── urls.py               URL 라우팅
 ├── frontend/                 React 앱
+│   ├── Dockerfile            React Docker 설정
 │   └── src/
 │       ├── api/
 │       │   ├── client.js     axios 인스턴스
@@ -111,6 +117,8 @@ Excel_FreeThrow/
 │           ├── auth.css
 │           ├── dashboard.css
 │           └── task.css
+├── Dockerfile                Django Docker 설정
+├── docker-compose.yml        컨테이너 통합 실행 설정
 ├── manage.py
 ├── requirements.txt
 └── Procfile
@@ -137,8 +145,9 @@ Django REST API (Backend)
 
 ## 🚀 로컬 실행 방법
 
-### Backend
+### 방법 1 — 일반 실행 (Mac 로컬)
 
+#### Backend
 ```bash
 # 1. 프로젝트 폴더로 이동
 cd Excel_FreeThrow
@@ -158,8 +167,7 @@ python3 manage.py runserver
 # → http://localhost:8000
 ```
 
-### Frontend
-
+#### Frontend
 ```bash
 # 1. 프론트엔드 폴더로 이동
 cd frontend
@@ -174,12 +182,45 @@ npm run dev
 
 ---
 
+### 방법 2 — Docker 실행 (환경 통일)
+
+```bash
+# 한 번에 실행
+docker-compose up --build
+
+# 백그라운드 실행
+docker-compose up -d --build
+
+# 종료
+docker-compose down
+```
+
+---
+
 ## 🚀 배포
 
+### Railway + Vercel (메인 서비스)
 ```
 git push → 자동 배포
 ├── Backend  → Railway (django-excelfreethrow-production.up.railway.app)
 └── Frontend → Vercel  (django-excel-free-throw.vercel.app)
+```
+
+### AWS EC2 (Linux 서버 직접 배포)
+```
+git push → GitHub Actions → EC2 자동 배포
+├── Amazon Linux 2023
+├── Docker + Docker Compose
+└── http://18.118.49.235:5173
+```
+
+### GitHub Actions CI/CD
+```yaml
+# .github/workflows/deploy.yml
+# git push → EC2 자동 접속 → git pull → docker-compose 재시작
+on:
+  push:
+    branches: [ main ]
 ```
 
 ---
@@ -190,4 +231,4 @@ git push → 자동 배포
 |------|------|
 | **개발 기간** | 2026 |
 | **개발 인원** | 1인 개발 |
-| **버전** | Ver 1.0 |
+| **버전** | Ver 1.1 |
