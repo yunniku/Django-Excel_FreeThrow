@@ -28,8 +28,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-j@^420$x&=og50a&&y@&u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['django-excelfreethrow-production.up.railway.app', 'localhost', '127.0.0.1']
-# Application definition
+ALLOWED_HOSTS = [
+    'django-excelfreethrow-production.up.railway.app',
+    'localhost',
+    '127.0.0.1',
+    'backend',   # ← 추가
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -84,7 +88,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

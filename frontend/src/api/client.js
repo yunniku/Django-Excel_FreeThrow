@@ -2,8 +2,8 @@
 import axios from 'axios';
 
 const client = axios.create({
-    baseURL: 'https://django-excelfreethrow-production.up.railway.app',
-    timeout: 60000,
+  baseURL: '',   // ← 비우기 (vite proxy가 처리)
+  timeout: 60000,
 });
 
 // 요청할 때마다 토큰 자동으로 붙여주기
