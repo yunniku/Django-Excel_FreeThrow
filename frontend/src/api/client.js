@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const client = axios.create({
-  baseURL: '',   // ← 비우기 (vite proxy가 처리)
+  baseURL: 'https://django-excelfreethrow-production.up.railway.app',
   timeout: 60000,
 });
 
