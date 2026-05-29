@@ -68,22 +68,23 @@ Frontend (React) — Vercel
          ↓
 
 Backend (Django REST Framework) — Railway / AWS EC2
-├── /api/auth/register        회원가입
-├── /api/auth/login           로그인
-├── /api/auth/logout          로그아웃
+├── /api/register/            회원가입
+├── /api/login/               로그인
+├── /api/logout/              로그아웃
+├── /api/me/                  내 정보
 ├── /api/projects/            프로젝트 목록 / 생성
 ├── /api/projects/<id>/       프로젝트 수정 / 삭제
-├── /api/excel/sheets/        시트 목록 조회
-├── /api/excel/preview/       파일 미리보기
-├── /api/excel/filter-values/ 조건 필터 값 조회
-├── /api/excel/compare/       Compare 실행
-└── /api/excel/save/          Save Result 실행
+├── /api/sheets/              시트 목록 조회
+├── /api/preview/             파일 미리보기
+├── /api/filter-values/       조건 필터 값 조회
+├── /api/compare/             Compare 실행
+└── /api/save/                Save Result 실행
 
          │  Nginx 리버스 프록시 (AWS EC2)
          ↓
 
 Nginx
-├── / (80포트)     → React (5173포트)
+├── / (80포트)     → React  (5173포트)
 └── /api/ (80포트) → Django (8000포트)
 ```
 
@@ -106,9 +107,10 @@ Excel_FreeThrow/
 │   └── urls.py               URL 라우팅
 ├── frontend/                 React 앱
 │   ├── Dockerfile            React Docker 설정
+│   ├── vercel.json           Vercel SPA 라우팅 설정
 │   └── src/
 │       ├── api/
-│       │   ├── client.js     axios 인스턴스
+│       │   ├── client.js     axios 인스턴스 (baseURL: Railway)
 │       │   └── index.js      API 호출 함수 모음
 │       ├── components/
 │       │   ├── PreviewModal.jsx  파일 미리보기 모달
@@ -127,9 +129,9 @@ Excel_FreeThrow/
 │           └── task.css
 ├── Dockerfile                Django Docker 설정
 ├── docker-compose.yml        컨테이너 통합 실행 설정
+├── Procfile                  Railway 실행 설정 (migrate + gunicorn)
 ├── manage.py
-├── requirements.txt
-└── Procfile
+└── requirements.txt
 ```
 
 ---
@@ -139,9 +141,9 @@ Excel_FreeThrow/
 ```
 사용자
   ↓ 브라우저에서 Input / Output 파일 선택
-React (Frontend)
-  ↓ axios POST (FormData)
-Django REST API (Backend)
+React (Frontend) — Vercel
+  ↓ axios POST (FormData) → Railway 백엔드 API 호출
+Django REST API (Backend) — Railway
   ↓ pandas로 엑셀 데이터 읽기 + 매칭 처리
   ↓ openpyxl로 Output 파일 셀 값 기록 + 핑크 하이라이트
 처리된 xlsx 파일 반환
@@ -202,7 +204,7 @@ docker-compose up -d --build
 # 종료
 docker-compose down
 
-# 마이그레이션
+# 마이그레이션 (Docker 환경)
 docker-compose exec backend python3 manage.py migrate
 ```
 
@@ -211,17 +213,21 @@ docker-compose exec backend python3 manage.py migrate
 ## 🚀 배포
 
 ### Railway + Vercel (메인 서비스)
+
 ```
 git push → 자동 배포
-├── Backend  → Railway (django-excelfreethrow-production.up.railway.app)
-└── Frontend → Vercel  (django-excel-free-throw.vercel.app)
+├── Backend  → Railway  https://django-excelfreethrow-production.up.railway.app
+│             Procfile: python manage.py migrate && gunicorn config.wsgi
+└── Frontend → Vercel   https://django-excel-free-throw.vercel.app
 ```
 
 ### AWS EC2 (Linux 서버 직접 배포)
+
 ```
 git push → GitHub Actions → EC2 자동 배포
 ├── Amazon Linux 2023
 ├── Docker + Docker Compose
+│   └── Dockerfile CMD: python manage.py migrate && gunicorn
 ├── Nginx 리버스 프록시 (80포트)
 │   ├── /      → React  (5173포트)
 │   └── /api/  → Django (8000포트)
@@ -229,6 +235,7 @@ git push → GitHub Actions → EC2 자동 배포
 ```
 
 ### GitHub Actions CI/CD
+
 ```yaml
 # .github/workflows/deploy.yml
 # git push → EC2 자동 접속 → git pull → docker-compose 재시작
@@ -236,6 +243,17 @@ on:
   push:
     branches: [ main ]
 ```
+
+---
+
+## ⚙️ 환경 변수
+
+| 변수 | 설명 | 예시 |
+|------|------|------|
+| `SECRET_KEY` | Django 시크릿 키 | `django-insecure-...` |
+| `DEBUG` | 디버그 모드 | `False` |
+| `OPENBLAS_NUM_THREADS` | OpenBLAS 스레드 수 | `1` |
+| `OMP_NUM_THREADS` | OpenMP 스레드 수 | `1` |
 
 ---
 
@@ -253,4 +271,4 @@ ssh -i excel-freethrow-key.pem ec2-user@18.118.49.235
 |------|------|
 | **개발 기간** | 2026 |
 | **개발 인원** | 1인 개발 |
-| **버전** | Ver 1.2 |
+| **버전** | Ver 1.3 |
