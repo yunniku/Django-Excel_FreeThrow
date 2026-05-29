@@ -146,11 +146,8 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/login/'
 
 
-# CORS 설정 (React 개발서버 허용)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "https://django-excel-free-throw.vercel.app",  # ← 추가
-]
+# CORS 설정
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # DRF 설정
