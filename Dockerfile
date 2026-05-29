@@ -2,7 +2,6 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# 스레드 문제 해결
 ENV PIP_PROGRESS_BAR=off
 ENV PYTHONUNBUFFERED=1
 ENV OPENBLAS_NUM_THREADS=1
@@ -15,4 +14,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["gunicorn", "config.wsgi", "--bind", "0.0.0.0:8000", "--workers", "1"]
+CMD ["sh", "-c", "python manage.py migrate && gunicorn config.wsgi --bind 0.0.0.0:${PORT:-8000} --workers 1"]
