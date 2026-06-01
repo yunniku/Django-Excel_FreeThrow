@@ -418,8 +418,6 @@ def save_result(request):
         for p in [in_tmp, out_tmp]:
             if p and os.path.exists(p): os.unlink(p)
 
-
-
 @api_view(['DELETE', 'PUT'])
 @permission_classes([IsAuthenticated])
 def project_delete(request, pk):
