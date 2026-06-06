@@ -1,67 +1,83 @@
-# ⚡ Excel FreeThrow — 엑셀 데이터 자동 이전 웹 서비스
+# Excel FreeThrow — 엑셀 데이터 자동 이전 웹 서비스
 
-> Django REST Framework + React 기반의 엑셀 데이터 매칭 및 자동 이전 웹 서비스
+Django REST Framework + React 기반 엑셀 데이터 매칭 및 자동 이전 웹 서비스
 
-🔗 **배포 링크**: [https://django-excel-free-throw.vercel.app](https://django-excel-free-throw.vercel.app)
+## 프로젝트 정보
 
----
+- 개발 기간: 2026
+- 개발 인원: 1인
+- 주요 기술: Django, DRF, React, pandas, openpyxl, Docker, GitHub Actions
 
-## 📌 프로젝트 소개
+- GitHub
+  - https://github.com/yunniku/Django-Excel_FreeThrow
 
-**Excel FreeThrow**는 두 개의 엑셀 파일을 매칭 컬럼 기준으로 비교하고, 데이터를 자동으로 이전해주는 웹 서비스입니다.
-
-실무에서 Input 파일의 데이터를 Output 파일의 특정 컬럼에 반복적으로 옮겨야 하는 작업이 자주 발생했습니다.
-기존에는 Python과 PyQt6로 **Windows 전용 데스크탑 프로그램**을 개발하여 사용했으나, 아래의 한계가 있었습니다.
-
-- PC에 직접 설치해야만 사용 가능 (Windows 전용)
-- 새 버전 배포 시 모든 PC에 재설치 필요
-
-이를 해결하기 위해 기존 GUI의 핵심 로직(pandas, openpyxl)을 그대로 재활용하면서,
-설치 없이 브라우저에서 바로 사용할 수 있도록 **Django REST Framework + React 기반 웹 서비스로 전환**했습니다.
+- 배포
+  - https://django-excel-free-throw.vercel.app
 
 ---
 
-## 🛠 기술 스택
+## 1. 프로젝트 개요
+실무에서 두 엑셀 파일을 기준 컬럼으로 매칭하고 데이터를 특정 컬럼에 반복적으로 옮기는 작업이 자주 발생했습니다.
 
-| 분류 | 기술 |
-|------|------|
-| **Frontend** | React, React Router, JavaScript, CSS |
-| **Backend** | Python 3.11, Django 5.2, Django REST Framework |
-| **엑셀 처리** | pandas, openpyxl |
-| **인증** | DRF Token Authentication |
-| **CORS** | django-corsheaders |
-| **컨테이너** | Docker, Docker Compose |
-| **웹 서버** | Nginx (리버스 프록시) |
-| **배포** | Railway (Backend), Vercel (Frontend), AWS EC2 (Amazon Linux 2023) |
-| **CI/CD** | GitHub Actions |
+처음에는 Python과 PyQt6로 Windows 전용 데스크탑 프로그램을 만들어 사내에서 사용했습니다. 실무에서 직접 쓰면서 피드백을 반영해 버전을 고도화했으나, 두 가지 한계가 있었습니다.
+
+- PC에 직접 설치해야만 사용 가능하고, 새 버전이 나올 때마다 모든 PC에 재설치 필요
+- 엑셀 저장을 처리하던 win32com 라이브러리가 Windows 전용이라 Mac이나 Linux 서버에서는 동작 불가
+
+웹 서비스로 전환하면서 두 문제를 함께 해결했습니다. 브라우저만 있으면 OS 상관없이 어디서든 접근 가능해졌고, win32com으로 처리하던 엑셀 저장 로직을 openpyxl로 완전히 대체해 Windows 의존성을 없앴습니다.
+
+Eternal(Django Template SSR)을 만든 직후에 시작한 프로젝트로, 이번에는 의도적으로 DRF + React 분리 구조를 선택했습니다. 파일 선택 시 시트 목록 자동 갱신, 컬럼 동적 추가/삭제, Compare 결과 즉시 표시처럼 상태가 실시간으로 바뀌는 UI가 많아 SSR보다 React가 더 적합하다고 판단했습니다.
 
 ---
 
-## ✨ 주요 기능
+## 2. 기술 스택
 
-### 인증
+| 분류 | 기술 | 선택 이유 |
+|------|------|-----------|
+| Backend | Python 3.11, Django 5.2, DRF | 기존 GUI의 pandas / openpyxl 로직 재활용. DRF로 JSON API 서버 빠르게 구축 |
+| Frontend | React, React Router, JavaScript, CSS | 파일 선택 → 시트 갱신, 컬럼 동적 추가/삭제 등 실시간 UI 변경이 많아 선택 |
+| 엑셀 읽기 / 처리 | pandas | 기존 GUI 핵심 로직 재활용. 복수 컬럼 매칭, 중복 키 탐지, 조건 필터 처리 |
+| 엑셀 쓰기 / 저장 | openpyxl | win32com(Windows 전용) 완전 대체. Output 파일 셀 값 기록 + 변경 셀 핑크 하이라이트 |
+| 인증 | DRF Token Authentication | React(Vercel)와 Django(Railway)가 다른 서버에 있어 세션 공유 불가. Token 방식 선택 |
+| CORS | django-corsheaders | React와 Django가 다른 주소에서 실행되므로 크로스오리진 요청 허용 필요 |
+| 컨테이너 | Docker, Docker Compose | 개발 환경과 서버 환경 통일 |
+| 웹 서버 | Nginx | / → React, /api/ → Django 리버스 프록시 |
+| 배포 | Railway (Backend), Vercel (Frontend) | 분리 배포. 사용자 공유 주소는 Vercel |
+| 인프라 경험 | AWS EC2, GitHub Actions | git push 한 번에 EC2 자동 배포 파이프라인 직접 구축 |
+
+pandas와 openpyxl을 역할 분리해서 함께 쓴 이유: pandas는 데이터 읽기 / 필터 / 매칭 처리에, openpyxl은 Output 파일에 직접 값을 쓰고 하이라이트를 입히는 작업에 각각 특화
+기존 GUI에서는 win32com이 두 역할을 모두 담당했는데, 웹 서버 환경에서는 win32com이 동작하지 않아 pandas + openpyxl 조합으로 전체를 재구현
+
+---
+
+## 3. 주요 기능
+
+### 3-1. 인증
 - 회원가입 / 로그인 / 로그아웃
-- DRF Token 기반 인증 (로그인 시 토큰 발급 → 모든 API 요청 헤더 자동 첨부)
+- DRF Token 인증 — 로그인 시 토큰 발급, 이후 모든 API 요청 헤더에 자동 첨부
 
-### 프로젝트 관리
+### 3-2. 프로젝트 관리
 - 프로젝트 생성 / 수정 / 삭제
-- 프로젝트별 작업 이력 관리
+- 프로젝트별 작업 이력 관리 (TaskHistory 모델)
 
-### 엑셀 작업
-- **Input / Output 파일 선택** — xlsx, xls 파일 업로드
-- **시트 선택** — 파일 업로드 시 시트 목록 자동 조회
-- **파일 미리보기** — 상위 20행 미리보기 (Preview 모달)
-- **Matching Columns** — 매칭 기준 컬럼 설정 (복수 설정 가능)
-- **조건 필터** — 특정 컬럼 값 기준으로 Input 데이터 필터링 (Filter 모달)
-- **Compare** — Input / Output 파일 매칭 결과 비교 (일치 행 수, 중복 키 탐지)
-- **Transfer Columns** — Input 컬럼 데이터를 Output 컬럼으로 자동 이전
-- **Custom Text Fill** — 매칭된 Output 행에 사용자 지정 텍스트 자동 입력
-- **Save Result** — 처리된 Output 파일 다운로드 (변경된 셀 핑크 하이라이트)
-- **Reset** — 전체 초기화
+### 3-3. 엑셀 작업 (핵심)
+- Input / Output 파일 업로드 (xlsx, xls)
+- 시트 선택 — 파일 업로드 시 시트 목록 자동 조회
+- 파일 미리보기 — 상위 20행 미리보기 (Preview 모달)
+- Matching Columns — 매칭 기준 컬럼 복수 설정
+- 조건 필터 — 특정 컬럼 값 기준으로 Input 데이터 필터링
+- Compare — Input / Output 파일 매칭 결과 비교 (일치 행 수, 중복 키 탐지)
+- Transfer Columns — Input 컬럼 데이터를 Output 컬럼으로 자동 이전
+- Custom Text Fill — 매칭된 Output 행에 사용자 지정 텍스트 자동 입력
+- Save Result — 처리된 Output 파일 다운로드 (변경된 셀 핑크 하이라이트)
+- Reset — 전체 초기화
 
 ---
 
-## 🏗 아키텍처
+## 4. 시스템 구조
+Excel FreeThrow는 React 기반 프론트엔드와 DRF 백엔드를 분리한 구조로 설계되었습니다.
+
+React는 파일 업로드 / 컬럼 설정 / 결과 표시 등 실시간 상태 변화가 많은 UI를 담당하고, DRF는 pandas / openpyxl 기반 엑셀 처리 로직과 Token 인증을 담당합니다.
 
 ```
 Frontend (React) — Vercel
@@ -72,226 +88,110 @@ Frontend (React) — Vercel
     ├── PreviewModal  파일 미리보기
     └── FilterModal   조건 필터 선택
 
-         │  axios (REST API / JSON)
-         ↓
+        │  axios (Token 헤더 자동 첨부)
+        ↓
 
-Backend (Django REST Framework) — Railway / AWS EC2
-├── /api/register/          회원가입
-├── /api/login/             로그인 (Token 발급)
-├── /api/logout/            로그아웃
-├── /api/me/                현재 유저 정보
-├── /api/projects/          프로젝트 목록 / 생성
-├── /api/projects/<id>/     프로젝트 수정 / 삭제
-├── /api/sheets/            시트 목록 조회
-├── /api/preview/           파일 미리보기
-├── /api/filter-values/     조건 필터 값 조회
-├── /api/compare/           Compare 실행
-└── /api/save/              Save Result 실행 + 파일 다운로드
+Backend (DRF) — Railway
+├── /api/register/        회원가입
+├── /api/login/           로그인 (Token 발급)
+├── /api/logout/          로그아웃
+├── /api/me/              현재 유저 정보
+├── /api/projects/        프로젝트 CRUD
+├── /api/sheets/          시트 목록 조회
+├── /api/preview/         파일 미리보기
+├── /api/filter-values/   조건 필터 값 조회
+├── /api/compare/         Compare 실행
+└── /api/save/            Save Result + 파일 다운로드
 
-         │  Nginx 리버스 프록시 (AWS EC2)
-         ↓
+        │  pandas / openpyxl
+        ↓
 
-Nginx
-├── /      (80포트) → React  (5173포트)
-└── /api/  (80포트) → Django (8000포트)
+엑셀 처리 (views.py)
+├── pandas   — 두 파일 읽기 → 매칭 컬럼 기준 비교 → 중복 키 탐지
+└── openpyxl — Output 파일 셀 값 기록 → 변경 셀 핑크 하이라이트 → blob 반환
 ```
+
+### 4-1. 데이터 흐름
+사용자 → Input / Output 파일 선택
+  → React: axios POST (FormData + Token 헤더)
+    → DRF: pandas로 두 파일 읽기 → Matching Column 기준 매칭
+      → Compare: 일치 행 수, 중복 키 결과 JSON 반환
+        → Save: openpyxl로 Output 셀 기록 + 핑크 하이라이트
+          → 처리된 xlsx blob 반환 → 사용자 다운로드
+
+### 4-2. 구조 설계 핵심 포인트
+- React와 DRF를 완전히 분리한 구조 (각각 Vercel / Railway 배포)
+- DRF는 UI 없이 JSON API 서버 역할만 수행
+- 엑셀 처리 로직(pandas / openpyxl)은 기존 PyQt GUI에서 재활용
+- pandas / openpyxl 역할 분리로 읽기·처리와 쓰기·저장을 명확하게 구분
+- Token 인증으로 분리 배포 환경에서 세션 없이 인증 처리
 
 ---
 
-## 📁 프로젝트 구조
+## 5. 핵심 구현 포인트
 
-```
-Excel_FreeThrow/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml            GitHub Actions CI/CD
-├── config/                       Django 설정
-│   ├── settings.py
-│   └── urls.py
-├── excel_app/                    메인 앱
-│   ├── models.py                 Project, TaskHistory 모델
-│   ├── serializers.py            DRF Serializer
-│   ├── views.py                  API 뷰 (엑셀 처리 로직 포함)
-│   └── urls.py                   URL 라우팅
-├── frontend/                     React 앱
-│   ├── Dockerfile                React Docker 설정
-│   └── src/
-│       ├── api/
-│       │   ├── client.js         axios 인스턴스 (Token 헤더 자동 첨부)
-│       │   └── index.js          API 호출 함수 모음
-│       ├── components/
-│       │   ├── PreviewModal.jsx  파일 미리보기 모달
-│       │   └── FilterModal.jsx   조건 필터 모달
-│       ├── hooks/
-│       │   └── useAuth.jsx       로그인 상태 전역 관리
-│       ├── pages/
-│       │   ├── LoginPage.jsx
-│       │   ├── RegisterPage.jsx
-│       │   ├── DashboardPage.jsx
-│       │   └── TaskPage.jsx
-│       └── styles/
-│           ├── base.css
-│           ├── auth.css
-│           ├── dashboard.css
-│           └── task.css
-├── Dockerfile                    Django Docker 설정
-├── docker-compose.yml            컨테이너 통합 실행 설정
-├── manage.py
-├── requirements.txt
-└── Procfile                      Railway 배포 설정
+### 5-1. win32com → openpyxl 전환
+
+기존 GUI는 Excel 앱을 직접 열어서 셀에 값을 쓰는 win32com 방식이었는데, 웹 서버(Linux)에서는 동작하지 않습니다. openpyxl로 전체를 재구현하면서 셀 값 기록, 핑크 하이라이트, 중복 키 경고 텍스트를 하나씩 맞춰갔습니다.
+
+```python
+import openpyxl
+from openpyxl.styles import PatternFill
+
+pink_fill = PatternFill(start_color="FF99CC", end_color="FF99CC", fill_type="solid")
+
+wb = openpyxl.load_workbook(output_path)
+ws = wb.active
+
+for row_idx, col_map in transfer_targets:
+    for src_col, dst_col in col_map.items():
+        value = matched_data[src_col]
+        cell = ws.cell(row=row_idx, column=dst_col)
+        cell.value = value
+        cell.fill = pink_fill  # 변경된 셀 핑크 하이라이트
+
+wb.save(result_path)
 ```
 
----
+### 5-2. pandas 복수 컬럼 매칭 + 중복 키 탐지
 
-## 🗄 데이터베이스 모델
+매칭 컬럼이 여러 개일 때 복합 키를 생성하고 중복 여부를 탐지합니다. 실무에서 TAG + MODULE 같은 복수 컬럼 조합을 기준으로 매칭해야 하는 경우가 많아 설계한 로직입니다.
 
-| 모델 | 주요 필드 |
-|------|----------|
-| **Project** | id, user(FK), name, description, created_at |
-| **TaskHistory** | id, project(FK), status, result_summary, created_at |
+```python
+import pandas as pd
 
----
+# 복수 컬럼 기준 복합 키 생성
+input_df['_key'] = input_df[match_cols].astype(str).agg('|'.join, axis=1)
+output_df['_key'] = output_df[match_cols].astype(str).agg('|'.join, axis=1)
 
-## 📊 데이터 흐름
+# 중복 키 탐지
+duplicates = input_df[input_df['_key'].duplicated(keep=False)]
+duplicate_keys = duplicates['_key'].unique().tolist()
 
-```
-사용자
-  ↓ 브라우저에서 Input / Output 파일 선택
-React (Frontend)
-  ↓ axios POST (FormData + Token 헤더)
-Django REST API (Backend)
-  ↓ pandas로 엑셀 데이터 읽기 + Matching Column 기준 매칭 처리
-  ↓ openpyxl로 Output 파일 셀 값 기록 + 변경 셀 핑크 하이라이트
-처리된 xlsx 파일 반환 (blob)
-  ↓
-사용자 파일 다운로드
+# 매칭
+merged = output_df.merge(input_df, on='_key', how='left', suffixes=('_out', '_in'))
 ```
 
----
+### 5-3. DRF Token 인증 + axios 인터셉터
 
-## 🚀 설치 방법
+React(Vercel)와 Django(Railway)가 완전히 다른 서버에 있어 세션 공유가 어렵습니다. 로그인 시 발급된 Token을 localStorage에 저장하고, axios 인터셉터로 모든 요청 헤더에 자동 첨부합니다.
 
-### 사전 요구사항
+```javascript
+// api/client.js — Token 헤더 자동 첨부
+const client = axios.create({ baseURL: process.env.REACT_APP_API_URL })
 
-- Python 3.11 이상
-- Node.js 18 이상
-- pip3, npm
-- Docker / Docker Compose (Docker 실행 시)
-
-### 방법 1 — 로컬 직접 실행
-
-#### 1. 레포지토리 클론
-
-```bash
-git clone https://github.com/yunniku/Django-Excel_FreeThrow.git
-cd Django-Excel_FreeThrow
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) config.headers.Authorization = `Token ${token}`
+  return config
+})
 ```
 
-#### 2. Backend 실행
+### 5-4. Docker 기반 배포 및 GitHub Actions CI/CD 자동화
 
-```bash
-# 가상환경 생성 및 활성화
-python3 -m venv venv
-source venv/bin/activate
+Docker Compose로 Backend(Django 8000포트) + Frontend(React 5173포트) + Nginx(80포트) 3개 컨테이너를 구성했습니다. Nginx가 `/` 요청은 React로, `/api/` 요청은 Django로 라우팅합니다.
 
-# 패키지 설치
-pip3 install -r requirements.txt
-
-# DB 테이블 생성
-python3 manage.py migrate
-
-# 개발 서버 실행
-python3 manage.py runserver
-# → http://localhost:8000
-```
-
-#### 3. Frontend 실행 (별도 터미널)
-
-```bash
-# 프론트엔드 폴더로 이동
-cd frontend
-
-# 패키지 설치
-npm install
-
-# 개발 서버 실행
-npm run dev
-# → http://localhost:5173
-```
-
-> 브라우저에서 `http://localhost:5173` 접속
-> (React → Django API 요청은 `http://localhost:8000` 으로 전달)
-
----
-
-### 방법 2 — Docker로 실행 (환경 통일)
-
-```bash
-# 프로젝트 루트에서 한 번에 실행
-docker-compose up --build
-# → http://localhost
-
-# 백그라운드 실행
-docker-compose up -d --build
-
-# 마이그레이션 (최초 1회)
-docker-compose exec backend python3 manage.py migrate
-
-# 종료
-docker-compose down
-```
-
-> Docker 실행 시 Nginx가 80포트에서 React와 Django를 동시에 서빙합니다.
-
----
-
-## 📖 사용법
-
-### 기본 워크플로우
-
-1. **회원가입 → 로그인**
-2. 대시보드에서 **새 프로젝트 생성** (선택)
-3. **⚡ 바로 작업하기** 클릭 → TaskPage 이동
-4. **Input 파일 업로드** → 시트 선택
-5. **Output 파일 업로드** → 시트 선택
-6. **Matching Columns** 설정 — Input/Output 파일의 매칭 기준 컬럼 지정
-7. (선택) **Preview** — 상위 20행 미리보기로 파일 확인
-8. (선택) **조건 필터** — 특정 컬럼 값 기준으로 Input 데이터 필터링
-9. **Compare** 클릭 → 두 파일의 매칭 결과 확인 (일치 행 수, 중복 키)
-10. **Transfer Columns** 설정 — Input의 어떤 컬럼을 Output의 어떤 컬럼으로 옮길지 지정
-11. (선택) **Custom Text Fill** — 매칭된 행의 특정 컬럼에 고정 텍스트 자동 입력
-12. **Save Result** 클릭 → 처리된 xlsx 파일 다운로드 (변경 셀 핑크 하이라이트)
-13. **Reset** — 전체 초기화 후 새 작업 시작
-
----
-
-## 🚀 배포 구조
-
-### Railway + Vercel (메인 서비스)
-
-```
-git push (main)
-  → Railway 자동 배포 (Backend)
-  → Vercel 자동 배포 (Frontend)
-
-Backend  → https://django-excelfreethrow-production.up.railway.app
-Frontend → https://django-excel-free-throw.vercel.app
-```
-
-### AWS EC2 + Docker + GitHub Actions (CI/CD 인프라 경험)
-
-macOS 로컬에서 개발 후 Docker로 컨테이너화, AWS EC2 (Amazon Linux 2023)에 배포
-GitHub Actions CI/CD 파이프라인으로 `git push` 한 번에 자동 배포
-
-```
-git push (main)
-  → GitHub Actions 실행
-    → EC2 SSH 접속
-      → git pull
-        → docker-compose down
-          → docker-compose up -d --build
-            → migrate 자동 실행
-```
+GitHub Actions를 활용하여 main 브랜치에 push가 발생하면 EC2 서버로 자동 배포되도록 CI/CD 파이프라인을 구축했습니다.
 
 ```yaml
 # .github/workflows/deploy.yml
@@ -317,34 +217,49 @@ jobs:
             sudo docker-compose exec -T backend python3 manage.py migrate
 ```
 
-> GitHub Actions 사용 시 레포지토리 Settings → Secrets에 `EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY` 등록 필요
+---
+
+## 6. 배포 구조
+본 프로젝트는 DRF + React 구조를 기반으로, 프론트엔드와 백엔드를 분리하여 배포 및 운영했습니다.
+
+### 6-1. 운영 배포 (Railway + Vercel)
+git push → Railway / Vercel 자동 배포
+├── Backend  → Railway (Django + gunicorn)
+├── Frontend → Vercel (React 정적 파일)
+└── 사용자 공유 주소: https://django-excel-free-throw.vercel.app
+
+사용자에게 공유하는 주소는 프론트엔드 주소(Vercel)입니다. React가 내부적으로 Railway API를 호출합니다.
+
+### 6-2. CI/CD 및 인프라 자동화 (AWS EC2)
+Docker 기반 컨테이너화와 GitHub Actions 자동 배포 파이프라인을 직접 구축한 경험입니다.
+
+구성 요소:
+- Docker (Django + React + Nginx)
+- Nginx (Reverse Proxy / API 라우팅)
+- GitHub Actions (자동 배포)
 
 ---
 
-## 🤝 기여 방법
+## 7. AI 활용 내역
+본 프로젝트는 AI(Claude, ChatGPT)를 개발 보조 도구로 사용했습니다.
+문제 원인 분석, 코드 리뷰, 학습 보조 용도로 AI를 활용했으며 최종 설계, 구현, 디버깅은 직접 수행했습니다.
 
-1. 이 레포를 **Fork** 하세요
-2. 새 브랜치를 생성하세요
-   ```bash
-   git checkout -b feature/새기능
-   ```
-3. 변경사항을 커밋하세요
-   ```bash
-   git commit -m "feat: 새 기능 추가"
-   ```
-4. 브랜치에 Push 하세요
-   ```bash
-   git push origin feature/새기능
-   ```
-5. **Pull Request**를 열어주세요
+### 직접 설계 및 구현
+- pandas 복수 컬럼 복합 키 매칭 로직 (`'|'.join` 방식)
+- openpyxl 셀 값 기록 + PatternFill 핑크 하이라이트 처리
+- win32com → openpyxl 전환 (셀 값 기록 / 하이라이트 / 중복 키 경고 텍스트 재구현)
+- DRF Token 인증 흐름 (로그인 → 토큰 발급 → localStorage → axios 인터셉터)
+- Docker Compose 3개 컨테이너 구성 (Django + React + Nginx)
+- Nginx 리버스 프록시 설정 (`/api/` → Django, `/` → React)
+- GitHub Actions CI/CD 파이프라인 작성 (EC2 자동 배포)
+- Railway + Vercel 분리 배포 설정
+
+### AI 보조 활용
+- pandas merge 시 suffixes 충돌 처리 방식 검토
+- Vercel(React) → Railway(Django) 요청 시 CORS 설정 오류 원인 파악
+- docker-compose 컨테이너 간 네트워크 연결 문제 디버깅
+- GitHub Actions EC2 SSH 연결 실패 시 원인 확인
+- README 초안 작성
 
 ---
 
-## 👨‍💻 개발자
-
-| 항목 | 내용 |
-|------|------|
-| **개발 기간** | 2026 |
-| **개발 인원** | 1인 개발 |
-| **버전** | Ver 1.2 |
-| **GitHub** | [yunniku](https://github.com/yunniku) |
