@@ -32,13 +32,13 @@ export default function LoginPage() {
         <p>로그인</p>
         <form onSubmit={handleSubmit}>
           <input
-            placeholder="아이디"
+            placeholder="테스트용 : test1234@test.com"
             value={form.username}
             onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
           />
           <input
             type="password"
-            placeholder="비밀번호"
+            placeholder="테스트용 : test1234"
             value={form.password}
             onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
           />

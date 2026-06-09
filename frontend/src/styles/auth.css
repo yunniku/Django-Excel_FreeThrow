@@ -92,3 +92,8 @@
   flex-direction: column;
   gap: 12px;
 }
+
+.auth-card input::placeholder {
+  color: #BBBBBB;
+  font-size: 0.875rem;
+}
