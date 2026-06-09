@@ -17,26 +17,18 @@ Django REST Framework + React 기반 엑셀 데이터 매칭 및 자동 이전 �
 ---
 
 ## 1. 프로젝트 개요
-실무에서 두 엑셀 파일을 기준 컬럼으로 매칭하고 데이터를 특정 컬럼에 반복적으로 옮기는 작업이 자주 발생했습니다.
+실무에서 두 엑셀 파일을 기준 컬럼으로 매칭하고 데이터를 특정 컬럼에 반복적으로 옮기는 작업이 자주 발생했습니다. 처음에는 Python과 PyQt6로 Windows 전용 데스크탑 프로그램을 만들어 사내에서 사용했으나, PC마다 직접 설치해야 하고 엑셀 저장을 처리하던 win32com 라이브러리가 Windows 전용이라 서버에서는 동작하지 않는 한계가 있었습니다.
 
-처음에는 Python과 PyQt6로 Windows 전용 데스크탑 프로그램을 만들어 사내에서 사용했습니다. 실무에서 직접 쓰면서 피드백을 반영해 버전을 고도화했으나, 두 가지 한계가 있었습니다.
-
-- PC에 직접 설치해야만 사용 가능하고, 새 버전이 나올 때마다 모든 PC에 재설치 필요
-- 엑셀 저장을 처리하던 win32com 라이브러리가 Windows 전용이라 Mac이나 Linux 서버에서는 동작 불가
-
-웹 서비스로 전환하면서 두 문제를 함께 해결했습니다. 브라우저만 있으면 OS 상관없이 어디서든 접근 가능해졌고, win32com으로 처리하던 엑셀 저장 로직을 openpyxl로 완전히 대체해 Windows 의존성을 없앴습니다.
+웹 서비스로 전환하면서 두 문제를 함께 해결했습니다. 브라우저만 있으면 OS 상관없이 어디서든 사용 가능해졌고, win32com 엑셀 저장 로직을 openpyxl로 완전히 대체해 Windows 의존성을 없앴습니다.
 
 Eternal(Django Template SSR)을 만든 직후에 시작한 프로젝트로, 이번에는 의도적으로 DRF + React 분리 구조를 선택했습니다. 파일 선택 시 시트 목록 자동 갱신, 컬럼 동적 추가/삭제, Compare 결과 즉시 표시처럼 상태가 실시간으로 바뀌는 UI가 많아 SSR보다 React가 더 적합하다고 판단했습니다.
 
----
-
 ## 2. 기술 스택
-
 | 분류 | 기술 | 선택 이유 |
 |------|------|-----------|
 | Backend | Python 3.11, Django 5.2, DRF | 기존 GUI의 pandas / openpyxl 로직 재활용. DRF로 JSON API 서버 빠르게 구축 |
-| Frontend | React, React Router, JavaScript, CSS | 파일 선택 → 시트 갱신, 컬럼 동적 추가/삭제 등 실시간 UI 변경이 많아 선택 |
-| 엑셀 읽기 / 처리 | pandas | 기존 GUI 핵심 로직 재활용. 복수 컬럼 매칭, 중복 키 탐지, 조건 필터 처리 |
+| Frontend | React, React Router, JavaScript | 파일 선택 → 시트 갱신, 컬럼 동적 추가/삭제 등 실시간 UI 변경이 많아 선택 |
+| 엑셀 읽기 / 처리 | pandas | 복수 컬럼 매칭, 중복 키 탐지, 조건 필터 처리. 기존 GUI 핵심 로직 재활용 |
 | 엑셀 쓰기 / 저장 | openpyxl | win32com(Windows 전용) 완전 대체. Output 파일 셀 값 기록 + 변경 셀 핑크 하이라이트 |
 | 인증 | DRF Token Authentication | React(Vercel)와 Django(Railway)가 다른 서버에 있어 세션 공유 불가. Token 방식 선택 |
 | CORS | django-corsheaders | React와 Django가 다른 주소에서 실행되므로 크로스오리진 요청 허용 필요 |
@@ -44,9 +36,6 @@ Eternal(Django Template SSR)을 만든 직후에 시작한 프로젝트로, 이�
 | 웹 서버 | Nginx | / → React, /api/ → Django 리버스 프록시 |
 | 배포 | Railway (Backend), Vercel (Frontend) | 분리 배포. 사용자 공유 주소는 Vercel |
 | 인프라 경험 | AWS EC2, GitHub Actions | git push 한 번에 EC2 자동 배포 파이프라인 직접 구축 |
-
-pandas와 openpyxl을 역할 분리해서 함께 쓴 이유: pandas는 데이터 읽기 / 필터 / 매칭 처리에, openpyxl은 Output 파일에 직접 값을 쓰고 하이라이트를 입히는 작업에 각각 특화
-기존 GUI에서는 win32com이 두 역할을 모두 담당했는데, 웹 서버 환경에서는 win32com이 동작하지 않아 pandas + openpyxl 조합으로 전체를 재구현
 
 ---
 
@@ -72,12 +61,10 @@ pandas와 openpyxl을 역할 분리해서 함께 쓴 이유: pandas는 데이터
 - Save Result — 처리된 Output 파일 다운로드 (변경된 셀 핑크 하이라이트)
 - Reset — 전체 초기화
 
----
-
 ## 4. 시스템 구조
-Excel FreeThrow는 React 기반 프론트엔드와 DRF 백엔드를 분리한 구조로 설계되었습니다.
+DRF를 JSON API 서버로 구성하고, React를 독립적인 SPA 프론트엔드로 분리하여 역할을 명확하게 구분했습니다.
 
-React는 파일 업로드 / 컬럼 설정 / 결과 표시 등 실시간 상태 변화가 많은 UI를 담당하고, DRF는 pandas / openpyxl 기반 엑셀 처리 로직과 Token 인증을 담당합니다.
+사용자의 요청은 React 컴포넌트에서 axios를 통해 API로 전달되며, DRF는 pandas / openpyxl로 엑셀을 처리한 뒤 결과를 JSON 또는 파일로 반환합니다.
 
 ```
 Frontend (React) — Vercel
@@ -131,7 +118,6 @@ Backend (DRF) — Railway
 ## 5. 핵심 구현 포인트
 
 ### 5-1. win32com → openpyxl 전환
-
 기존 GUI는 Excel 앱을 직접 열어서 셀에 값을 쓰는 win32com 방식이었는데, 웹 서버(Linux)에서는 동작하지 않습니다. openpyxl로 전체를 재구현하면서 셀 값 기록, 핑크 하이라이트, 중복 키 경고 텍스트를 하나씩 맞춰갔습니다.
 
 ```python
@@ -153,8 +139,9 @@ for row_idx, col_map in transfer_targets:
 wb.save(result_path)
 ```
 
-### 5-2. pandas 복수 컬럼 매칭 + 중복 키 탐지
+---
 
+### 5-2. pandas 복수 컬럼 매칭 + 중복 키 탐지
 매칭 컬럼이 여러 개일 때 복합 키를 생성하고 중복 여부를 탐지합니다. 실무에서 TAG + MODULE 같은 복수 컬럼 조합을 기준으로 매칭해야 하는 경우가 많아 설계한 로직입니다.
 
 ```python
@@ -172,8 +159,9 @@ duplicate_keys = duplicates['_key'].unique().tolist()
 merged = output_df.merge(input_df, on='_key', how='left', suffixes=('_out', '_in'))
 ```
 
-### 5-3. DRF Token 인증 + axios 인터셉터
+---
 
+### 5-3. DRF Token 인증 + axios 인터셉터
 React(Vercel)와 Django(Railway)가 완전히 다른 서버에 있어 세션 공유가 어렵습니다. 로그인 시 발급된 Token을 localStorage에 저장하고, axios 인터셉터로 모든 요청 헤더에 자동 첨부합니다.
 
 ```javascript
@@ -187,9 +175,10 @@ client.interceptors.request.use((config) => {
 })
 ```
 
-### 5-4. Docker 기반 배포 및 GitHub Actions CI/CD 자동화
+---
 
-Docker Compose로 Backend(Django 8000포트) + Frontend(React 5173포트) + Nginx(80포트) 3개 컨테이너를 구성했습니다. Nginx가 `/` 요청은 React로, `/api/` 요청은 Django로 라우팅합니다.
+### 5-4. Docker 기반 배포 및 GitHub Actions CI/CD 자동화
+Docker Compose로 Backend(Django) + Frontend(React) + Nginx 3개 컨테이너를 구성했습니다. Nginx가 `/` 요청은 React로, `/api/` 요청은 Django로 라우팅합니다.
 
 GitHub Actions를 활용하여 main 브랜치에 push가 발생하면 EC2 서버로 자동 배포되도록 CI/CD 파이프라인을 구축했습니다.
 
@@ -220,23 +209,15 @@ jobs:
 ---
 
 ## 6. 배포 구조
-본 프로젝트는 DRF + React 구조를 기반으로, 프론트엔드와 백엔드를 분리하여 배포 및 운영했습니다.
-
-### 6-1. 운영 배포 (Railway + Vercel)
 git push → Railway / Vercel 자동 배포
 ├── Backend  → Railway (Django + gunicorn)
 ├── Frontend → Vercel (React 정적 파일)
 └── 사용자 공유 주소: https://django-excel-free-throw.vercel.app
 
-사용자에게 공유하는 주소는 프론트엔드 주소(Vercel)입니다. React가 내부적으로 Railway API를 호출합니다.
+로컬 환경 - Django와 React를 분리하여 실행
+배포 환경 - Backend / Frontend 각각 Railway / Vercel로 분리 배포
 
-### 6-2. CI/CD 및 인프라 자동화 (AWS EC2)
-Docker 기반 컨테이너화와 GitHub Actions 자동 배포 파이프라인을 직접 구축한 경험입니다.
-
-구성 요소:
-- Docker (Django + React + Nginx)
-- Nginx (Reverse Proxy / API 라우팅)
-- GitHub Actions (자동 배포)
+Docker 기반 EC2 환경에서 Nginx 리버스 프록시 + GitHub Actions 자동 배포 파이프라인을 직접 구축하여 인프라 운영 경험을 쌓았습니다.
 
 ---
 
@@ -259,7 +240,6 @@ Docker 기반 컨테이너화와 GitHub Actions 자동 배포 파이프라인을
 - Vercel(React) → Railway(Django) 요청 시 CORS 설정 오류 원인 파악
 - docker-compose 컨테이너 간 네트워크 연결 문제 디버깅
 - GitHub Actions EC2 SSH 연결 실패 시 원인 확인
-- README 초안 작성
+- README 초안 작성 및 문서 구조 개선
 
 ---
-
